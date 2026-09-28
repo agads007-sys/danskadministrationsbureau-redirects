@@ -341,5 +341,39 @@
   </footer>
 
   <a class="sticky" href="https://buy.stripe.com/5kQfZhdfR03X9631rXco003">Start nu · 299 kr./md.</a>
+
+  <!-- Partner referral tracking -->
+  <script>
+    (function () {
+      const REF_KEY = "dab_partner_ref";
+      const REF_TS_KEY = "dab_partner_ref_ts";
+      const REF_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+      const params = new URLSearchParams(window.location.search);
+      const incomingRef = params.get("ref");
+
+      if (incomingRef && /^[A-Za-z0-9_-]{1,200}$/.test(incomingRef)) {
+        localStorage.setItem(REF_KEY, incomingRef);
+        localStorage.setItem(REF_TS_KEY, String(Date.now()));
+      }
+
+      let partnerRef = localStorage.getItem(REF_KEY);
+      const savedAt = Number(localStorage.getItem(REF_TS_KEY) || "0");
+
+      if (!savedAt || Date.now() - savedAt > REF_TTL_MS) {
+        localStorage.removeItem(REF_KEY);
+        localStorage.removeItem(REF_TS_KEY);
+        partnerRef = null;
+      }
+
+      if (partnerRef) {
+        document.querySelectorAll('a[href^="https://buy.stripe.com/"]').forEach(function (link) {
+          const stripeUrl = new URL(link.href);
+          stripeUrl.searchParams.set("client_reference_id", partnerRef);
+          link.href = stripeUrl.toString();
+        });
+      }
+    })();
+  </script>
+
 </body>
 </html>
